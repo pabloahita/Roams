@@ -33,7 +33,7 @@ def crearCliente():
     except ValidationError:
         return jsonify({"message": "Problema al añadir cliente"}),500
         
-@app.get("/obtenerCliente/<str:DNI>")
+@app.get("/obtenerCliente/<DNI>")
 def obtenerDatosCliente(DNI):
     try:
         cliente=DBHelper.obtenerCliente(DNI)
@@ -47,7 +47,7 @@ def obtenerDatosCliente(DNI):
 
 
 if __name__=="__main__":
-    DBHelper.crearTabla()
+    DBHelper.crearTabla() #Crea tabla si hiciese falta
     app.run()
 
 
