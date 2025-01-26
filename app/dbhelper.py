@@ -32,15 +32,31 @@ class DBHelper:
 
     @staticmethod
     def obtenerCliente(dni:str):
-        if Cliente.dni_es_verdadero(dni):
-            DBHelper.abrirConexion()
-            cursor=DBHelper.conexion.execute("select nombre,email,capital_solicitado from clientes where DNI=?",(dni,))
-            fila=cursor.fetchone()
-            DBHelper.conexion.close()
-            return Cliente(
-                nombre=fila[0],
-                DNI=dni,
-                email=fila[1],
-                capital_solicitado=fila[2]
-            )
-        raise ValueError("El DNI es inválido")
+        DBHelper.abrirConexion()
+        cursor=DBHelper.conexion.execute("select nombre,email,capital_solicitado from clientes where DNI=?",(dni,))
+        fila=cursor.fetchone()
+        DBHelper.conexion.close()
+        if fila is None:
+            return None
+        
+        return Cliente(
+            nombre=fila[0],
+            DNI=dni,
+            email=fila[1],
+            capital_solicitado=fila[2]
+        )
+    
+    @staticmethod
+    def modificarCliente(cliente: Cliente,dni:str):
+        DBHelper.abrirConexion()
+        DBHelper.conexion.execute("update clientes set nombre=?,DNI=?,email=?,capital_solicitado=? where DNI=?",(cliente.nombre,cliente.DNI,cliente.email,cliente.capital_solicitado,dni))
+        DBHelper.conexion.commit()
+        DBHelper.conexion.close()
+
+    @staticmethod
+    def eliminarCliente(dni:str):
+        DBHelper.abrirConexion()
+        DBHelper.conexion.execute("delete from clientes where DNI=?",(dni,))
+        DBHelper.conexion.commit()
+        DBHelper.conexion.close()
+    
