@@ -13,12 +13,14 @@ class Cliente(BaseModel):
     @field_validator("nombre")
     def comprobarNombre(cls,nombre):
         if not nombre: #Si no se ha escrito nombre, lanza la excepción
-            raise ValueError("El nombre está vacío")
+            raise ValueError("No se ha introducido el nombre")
         return nombre
 
     #Validador del DNI
     @field_validator("DNI")
     def comprobarDNI(cls,DNI):
+        if not DNI:
+            raise ValueError("No se ha introducido el DNI")
         if not cls.dni_es_verdadero(DNI): #Si el DNI es incorrecto, lanza la excepción
             raise ValueError("El DNI no es válido")
         return DNI
@@ -26,7 +28,7 @@ class Cliente(BaseModel):
     #Validador del capital solicitado
     @field_validator("capital_solicitado")
     def comprobarCapitalSolicitado(cls,capital_solicitado):
-        if not capital_solicitado: #Si no se ha escrito capital solicitado, lanza la excepción
+        if capital_solicitado is None: #Si no se ha escrito capital solicitado, lanza la excepción
             raise ValueError("No se ha introducido un capital solicitado")
         elif capital_solicitado<=0:#Si no se ha escrito un capital solicitado positivo, lanza la excepción
             raise ValueError("El capital solicitado es incorrecto.")

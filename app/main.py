@@ -1,30 +1,25 @@
 #Importación de módulos
-
 import subprocess
 import sys
 try:
     from flask import Flask, request
 except ModuleNotFoundError:
-    print("Instalando el módulo flask....")
     subprocess.check_call([sys.executable, "-m", "pip", "install", "flask"])
     from flask import Flask, request
 try:
-    from pydantic import ValidationError, EmailStr
+    from pydantic import ValidationError
 except ModuleNotFoundError:
-    print("Instalando los módulos pydantic y pydantic[email]....")
     subprocess.check_call([sys.executable, "-m", "pip", "install", "pydantic"])
     subprocess.check_call([sys.executable, "-m", "pip", "install", "pydantic[email]"])
-    from pydantic import ValidationError, EmailStr
+    from pydantic import ValidationError
 try:
     from flask_restx import Api, Resource, fields
 except ModuleNotFoundError:
-    print("Instalando el módulo flask_restx...")
     subprocess.check_call([sys.executable, "-m", "pip", "install", "flask_restx"])
     from flask_restx import Api, Resource, fields
 
 from cliente import Cliente #Clase cliente
 from dbhelper import DBHelper #Clase de conexión a la base de datos
-
 
 app=Flask(__name__) #App
 
@@ -83,6 +78,8 @@ class ObtenerCliente(Resource):
         """Obtiene los datos de un cliente por su DNI, comprobando la validez del DNI antes de obtener dicho cliente"""
         try:
             DNI = request.args.get("DNI") #Obtiene el DNI por parámetro
+            if not DNI:#Si no se ha introducido DNI
+                return {"message": "No se ha introducido un DNI"}, 400 #Error de validación
             if not Cliente.dni_es_verdadero(DNI): #Si el DNI es inválido
                 return {"message":"El DNI introducido no es válido"}, 400 #Error de validación de DNI
             cliente = DBHelper.obtenerCliente(DNI) #Obtiene el cliente de la base de datos, si lo encuentra
@@ -135,6 +132,8 @@ class EliminarCliente(Resource):
         """Elimina un cliente por su DNI, comprobando previamente la validez del DNI y si dicho cliente existe"""
         try:
             DNI = request.args.get("DNI") #Obtiene el DNI por parámetro
+            if not DNI:#Si no se ha introducido DNI
+                return {"message": "No se ha introducido un DNI"}, 400 #Error de validación
             if not Cliente.dni_es_verdadero(DNI): #Si el DNI es inválido
                 return {"message":"El DNI introducido no es válido"}, 400 #Error de validación
             cliente=DBHelper.obtenerCliente(DNI) #Obtiene el cliente de la base de datos, si lo encuentra
@@ -161,13 +160,15 @@ class CalcularCuota(Resource):
             DNI = request.args.get("DNI") #Obtiene el DNI por parámetro
             TAE = request.args.get("TAE", type=float) #Obtiene la TAE por parámetro y la convierte a float
             plazo_de_amortizacion = request.args.get("plazo_de_amortizacion", type=int) #Obtiene el plazo de amortización por parámetro y lo convierte a entero
+            if not DNI:#Si no se ha introducido DNI
+                return {"message": "No se ha introducido un DNI"}, 400 #Error de validación
             if not Cliente.dni_es_verdadero(DNI): #Si el DNI es inválido
                 return {"message": "El DNI introducido no es válido"}, 400 #Error de validación
-            if not TAE: #Si no se ha introducido TAE
+            if TAE is None: #Si no se ha introducido TAE
                 return {"message":"No se ha introducido TAE. Debe ser un número entre 0 y 100"},400 #Error de validación
             if TAE < 0 or TAE > 100: #Si la TAE no está entre 0 y 100
                 return {"message":"El TAE introducido no es válido. Debe ser un número entre 0 y 100"},400 #Error de validación
-            if not plazo_de_amortizacion: #Si no se ha introducido plazo de amortización
+            if plazo_de_amortizacion is None: #Si no se ha introducido plazo de amortización
                 return {"message":"No se ha introducido plazo de amortización, debe ser un número mayor a 0"},400 #Error de validación
             if plazo_de_amortizacion<=0: #Si se ha introducido un plazo de amortización no positivo
                 return {"message":"El plazo de amortización no es válido, debe ser un número mayor a 0"},400 #Error de validación
